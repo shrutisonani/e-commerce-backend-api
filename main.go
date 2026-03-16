@@ -1,18 +1,31 @@
 package main
 
 import (
+	"db"
+
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+var router *gin.Engine
 
-	r := gin.Default()
+func setupRouter() *gin.Engine {
+	sqlDb := db.NewSql()
 
-	r.GET("/", func(c *gin.Context) {
+	router := gin.Default()
+
+	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "API running",
+			"db": sqlDb != nil,
 		})
 	})
 
-	r.Run(":8080")
+	return router
+}
+
+func main() {
+
+	router = setupRouter()	
+
+	router.Run(":8080")
 }
