@@ -39,7 +39,7 @@ func NewSql() *sqlx.DB {
 
 	name := os.Getenv("DB_NAME")
 	if name == "" {
-		name = "career_db"
+		name = "jewellery_db"
 	}
 
 	// MySQL connection string
