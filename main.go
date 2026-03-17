@@ -2,6 +2,7 @@ package main
 
 import (
 	"db"
+	"user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,12 +14,16 @@ func setupRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	router.GET("/", func(c *gin.Context) {
+	userRepo := user.NewUser(sqlDb)
+
+	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "API running",
+			"message": "Pong",
 			"db": sqlDb != nil,
 		})
 	})
+
+	router.POST("/", userRepo.CreateUser)
 
 	return router
 }
