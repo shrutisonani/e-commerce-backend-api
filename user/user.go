@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -102,4 +103,25 @@ func (repository *UserRepository) GetUsers() ([]Users, error) {
 	err := repository.Db.Select(&users, "SELECT * FROM users")
 
 	return users, err
+}
+
+func (repository *UserRepository) UserById(c *gin.Context) {
+
+	career := Users{}
+
+	id := c.Param("id")
+
+	err := repository.Db.Get(&career, "SELECT * FROM users WHERE id= '"+id+"' and is_verified = true and is_active = true")
+
+	if err != nil {
+		log.Error(err)
+		if err == sql.ErrNoRows {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, career)
 }

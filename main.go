@@ -27,6 +27,7 @@ func setupRouter() *gin.Engine {
 	{
 		user.POST("/register", userRepo.UserRegister)
 		user.GET("/", userRepo.Users)
+		user.GET("/:id", userRepo.UserById)
 	}
 
 	return router
