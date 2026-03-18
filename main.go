@@ -19,18 +19,21 @@ func setupRouter() *gin.Engine {
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Pong",
-			"db": sqlDb != nil,
+			"db":      sqlDb != nil,
 		})
 	})
 
-	router.POST("/", userRepo.CreateUser)
+	router.Group("/user")
+	{
+		router.POST("/register", userRepo.UserRegister)
+	}
 
 	return router
 }
 
 func main() {
 
-	router = setupRouter()	
+	router = setupRouter()
 
 	router.Run(":8080")
 }

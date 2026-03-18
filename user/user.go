@@ -23,24 +23,24 @@ type Users struct {
 
 // REFRESH TOKENS TABLE
 type RefreshTokens struct {
-	ID        int     `json:"id"`
-	UserID    int     `json:"user_id"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // PASSWORD RESETS TABLE
 type PasswordResets struct {
-	ID        int     `json:"id"`
-	UserID    int     `json:"user_id"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // EMAIL VERIFICATIONS TABLE
 type EmailVerifications struct {
-	ID        int     `json:"id"`
-	UserID    int     `json:"user_id"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
@@ -53,7 +53,7 @@ func NewUser(db *sqlx.DB) *UserRepository {
 	return &UserRepository{Db: db}
 }
 
-func (repository *UserRepository) CreateUser (c *gin.Context) {
+func (repository *UserRepository) UserRegister(c *gin.Context) {
 	user := Users{}
 
 	if err := c.BindJSON(&user); err != nil {
@@ -69,7 +69,7 @@ func (repository *UserRepository) CreateUser (c *gin.Context) {
 
 	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
 
-	_ , err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
+	_, err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
 
 	if err != nil {
 		log.Error(err)
