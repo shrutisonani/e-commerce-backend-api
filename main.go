@@ -23,9 +23,10 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
-	router.Group("/user")
+	user := router.Group("/api/user")
 	{
-		router.POST("/register", userRepo.UserRegister)
+		user.POST("/register", userRepo.UserRegister)
+		user.GET("/", userRepo.Users)
 	}
 
 	return router

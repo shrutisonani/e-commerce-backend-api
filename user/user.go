@@ -12,13 +12,14 @@ import (
 
 // USERS TABLE
 type Users struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	Email      string `json:"email"`
-	Password   string `json:"-"`
-	Role       string `json:"role"`
-	IsVerified bool   `json:"is_verified"`
-	IsActive   bool   `json:"is_active"`
+	Id         int       `json:"id"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	Password   string    `json:"password"`
+	Role       string    `json:"role"`
+	IsVerified bool      `json:"is_verified"`
+	IsActive   bool      `json:"is_active"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // REFRESH TOKENS TABLE
@@ -78,4 +79,27 @@ func (repository *UserRepository) UserRegister(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, user)
+}
+
+func (repository *UserRepository) Users(c *gin.Context) {
+
+	userList, err := repository.GetUsers()
+
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, userList)
+
+}
+
+func (repository *UserRepository) GetUsers() ([]Users, error) {
+
+	users := []Users{}
+
+	err := repository.Db.Select(&users, "SELECT * FROM users")
+
+	return users, err
 }
