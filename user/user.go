@@ -58,17 +58,20 @@ func NewUser(db *sqlx.DB) *UserRepository {
 func (repository *UserRepository) UserRegister(c *gin.Context) {
 	user := Users{}
 
+	// binf input data
 	if err := c.BindJSON(&user); err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
+	// password
 	hash, _ := bcrypt.GenerateFromPassword(
 		[]byte(user.Password), 10)
 
 	user.Password = string(hash)
 
+	// insert data
 	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
 
 	_, err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
@@ -107,15 +110,16 @@ func (repository *UserRepository) GetUsers() ([]Users, error) {
 
 func (repository *UserRepository) UserById(c *gin.Context) {
 
-	career := Users{}
+	user := Users{}
 
 	id := c.Param("id")
 
-	err := repository.Db.Get(&career, "SELECT * FROM users WHERE id= '"+id+"' and is_verified = true and is_active = true")
+	err := repository.Db.Get(&user, "SELECT * FROM users WHERE id= '"+id+"' and is_verified = true and is_active = true")
 
 	if err != nil {
 		log.Error(err)
 		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"message": "user is not verified or actived"})
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
@@ -123,5 +127,66 @@ func (repository *UserRepository) UserById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, career)
+	c.JSON(http.StatusOK, user)
+}
+
+func (repository *UserRepository) UpdateUser(c *gin.Context) {
+
+	user := Users{}
+
+	id := c.Param("id")
+
+	// fetch existing data
+	err := repository.Db.Get(&user, "SELECT * FROM users WHERE id= '"+id+"' and is_verified = true and is_active = true")
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"message": "user is not verified or actived"})
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	// bind input
+	input := Users{}
+	if err := c.BindJSON(&input); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// update new password
+	hash, _ := bcrypt.GenerateFromPassword(
+		[]byte(input.Password), 10)
+
+	input.Password = string(hash)
+
+	// merge (manual partial update logic)
+
+	if input.Name != "" {
+		user.Name = input.Name
+	}
+	if input.Email != "" {
+		user.Email = input.Email
+	}
+	if input.Password != "" {
+		user.Password = input.Password
+	}
+
+	// update data
+	_, err = repository.Db.Exec(
+		"UPDATE users SET name = ?, email = ?, password = ? WHERE id = ? and is_verified = true and is_active = true",
+		user.Name,
+		user.Email,
+		user.Password,
+		id,
+	)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+
 }
