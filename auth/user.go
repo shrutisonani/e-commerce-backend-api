@@ -1,64 +1,23 @@
-package user
+package auth
 
 import (
 	"database/sql"
 	"net/http"
-	"time"
+	"utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// USERS TABLE
-type Users struct {
-	Id         int       `json:"id"`
-	Name       string    `json:"name"`
-	Email      string    `json:"email"`
-	Password   string    `json:"password"`
-	Role       string    `json:"role"`
-	IsVerified bool      `json:"is_verified"`
-	IsActive   bool      `json:"is_active"`
-	CreatedAt  time.Time `json:"created_at"`
+func NewUser(db *sqlx.DB) *Repository {
+	return &Repository{Db: db}
 }
 
-// REFRESH TOKENS TABLE
-type RefreshTokens struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
-
-// PASSWORD RESETS TABLE
-type PasswordResets struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
-
-// EMAIL VERIFICATIONS TABLE
-type EmailVerifications struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
-
-type UserRepository struct {
-	Db *sqlx.DB
-}
-
-func NewUser(db *sqlx.DB) *UserRepository {
-	return &UserRepository{Db: db}
-}
-
-func (repository *UserRepository) UserRegister(c *gin.Context) {
+func (repository *Repository) UserRegister(c *gin.Context) {
 	user := Users{}
 
-	// binf input data
+	// bind input data
 	if err := c.BindJSON(&user); err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -66,10 +25,8 @@ func (repository *UserRepository) UserRegister(c *gin.Context) {
 	}
 
 	// password
-	hash, _ := bcrypt.GenerateFromPassword(
-		[]byte(user.Password), 10)
-
-	user.Password = string(hash)
+	hashed, _ := utils.HashPassword(user.Password, 10)
+	user.Password = hashed
 
 	// insert data
 	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
@@ -85,7 +42,7 @@ func (repository *UserRepository) UserRegister(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func (repository *UserRepository) Users(c *gin.Context) {
+func (repository *Repository) Users(c *gin.Context) {
 
 	userList, err := repository.GetUsers()
 
@@ -99,7 +56,7 @@ func (repository *UserRepository) Users(c *gin.Context) {
 
 }
 
-func (repository *UserRepository) GetUsers() ([]Users, error) {
+func (repository *Repository) GetUsers() ([]Users, error) {
 
 	users := []Users{}
 
@@ -108,7 +65,7 @@ func (repository *UserRepository) GetUsers() ([]Users, error) {
 	return users, err
 }
 
-func (repository *UserRepository) UserById(c *gin.Context) {
+func (repository *Repository) UserById(c *gin.Context) {
 
 	user := Users{}
 
@@ -130,7 +87,7 @@ func (repository *UserRepository) UserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (repository *UserRepository) UpdateUser(c *gin.Context) {
+func (repository *Repository) UpdateUser(c *gin.Context) {
 
 	user := Users{}
 
@@ -157,13 +114,10 @@ func (repository *UserRepository) UpdateUser(c *gin.Context) {
 	}
 
 	// update new password
-	hash, _ := bcrypt.GenerateFromPassword(
-		[]byte(input.Password), 10)
-
-	input.Password = string(hash)
+	hashed, _ := utils.HashPassword(input.Password, 10)
+	input.Password = hashed
 
 	// merge (manual partial update logic)
-
 	if input.Name != "" {
 		user.Name = input.Name
 	}

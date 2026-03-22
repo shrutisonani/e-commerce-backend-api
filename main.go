@@ -1,8 +1,8 @@
 package main
 
 import (
+	"auth"
 	"db"
-	"user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +14,7 @@ func setupRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	userRepo := user.NewUser(sqlDb)
+	userRepo := auth.NewUser(sqlDb)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
