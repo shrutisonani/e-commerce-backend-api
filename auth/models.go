@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"time"
@@ -44,4 +44,17 @@ type EmailVerifications struct {
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
+}
+
+// USER REGISTRATION
+type RegisterRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// LOGIN REQUEST
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

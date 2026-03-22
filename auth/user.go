@@ -1,13 +1,13 @@
-package user
+package auth
 
 import (
 	"database/sql"
 	"net/http"
+	"utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func NewUser(db *sqlx.DB) *Repository {
@@ -17,7 +17,7 @@ func NewUser(db *sqlx.DB) *Repository {
 func (repository *Repository) UserRegister(c *gin.Context) {
 	user := Users{}
 
-	// binf input data
+	// bind input data
 	if err := c.BindJSON(&user); err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -25,10 +25,8 @@ func (repository *Repository) UserRegister(c *gin.Context) {
 	}
 
 	// password
-	hash, _ := bcrypt.GenerateFromPassword(
-		[]byte(user.Password), 10)
-
-	user.Password = string(hash)
+	hashed, _ := utils.HashPassword(user.Password, 10)
+	user.Password = hashed
 
 	// insert data
 	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
@@ -116,13 +114,10 @@ func (repository *Repository) UpdateUser(c *gin.Context) {
 	}
 
 	// update new password
-	hash, _ := bcrypt.GenerateFromPassword(
-		[]byte(input.Password), 10)
-
-	input.Password = string(hash)
+	hashed, _ := utils.HashPassword(input.Password, 10)
+	input.Password = hashed
 
 	// merge (manual partial update logic)
-
 	if input.Name != "" {
 		user.Name = input.Name
 	}
