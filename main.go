@@ -15,6 +15,7 @@ func setupRouter() *gin.Engine {
 	router := gin.Default()
 
 	userRepo := auth.NewUser(sqlDb)
+	userAuth := auth.NewAuth(sqlDb)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -23,9 +24,9 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	router.POST("/register", userAuth.Register)
 	user := router.Group("/api/user")
 	{
-		user.POST("/register", userRepo.UserRegister)
 		user.GET("/", userRepo.Users)
 		user.GET("/:id", userRepo.UserById)
 		user.PATCH(":id", userRepo.UpdateUser)
