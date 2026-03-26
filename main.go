@@ -25,6 +25,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	router.POST("/register", userAuth.Register)
+	router.POST("login", userAuth.Login)
 	user := router.Group("/api/user")
 	{
 		user.GET("/", userRepo.Users)
