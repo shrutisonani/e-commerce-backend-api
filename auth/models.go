@@ -24,7 +24,7 @@ type Users struct {
 
 // REFRESH TOKENS TABLE
 type RefreshTokens struct {
-	ID        int       `json:"id"`
+	Id        int       `json:"id"`
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
@@ -32,7 +32,7 @@ type RefreshTokens struct {
 
 // PASSWORD RESETS TABLE
 type PasswordResets struct {
-	ID        int       `json:"id"`
+	Id        int       `json:"id"`
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
@@ -40,7 +40,7 @@ type PasswordResets struct {
 
 // EMAIL VERIFICATIONS TABLE
 type EmailVerifications struct {
-	ID        int       `json:"id"`
+	Id        int       `json:"id"`
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`

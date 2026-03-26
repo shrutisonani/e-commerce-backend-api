@@ -69,6 +69,49 @@ func (repository *Repository) Register(c *gin.Context) {
 	})
 }
 
+// User login
+func (repository *Repository) Login(c *gin.Context)  {
+	req := Users{}
+
+	// check auth login request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Error(err)
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// check the user by email id
+	user, err := repository.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Error(err)
+		c.JSON(401, gin.H{"error": err.Error()})
+        return
+    }
+
+	// compare the password is correct or not
+	if !utils.CheckPassword(req.Password, user.Password) {
+		c.JSON(401, gin.H{"error": "invalid credentials"})
+        return
+	}
+
+	// check email is verifyed or not
+	if !user.IsVerified {
+		c.JSON(401, gin.H{"error": "email not verified"})
+        return
+    }
+
+	access, _ := utils.GenerateAccessToken(user.Id)
+    refresh, _ := utils.GenerateRefreshToken(user.Id)
+
+	c.JSON(200, gin.H{
+        "access_token":  access,
+        "refresh_token": refresh,
+		"user": user,
+    })
+
+}
+
 // Create the user (insert the data query)
 func (repository *Repository) CreateUser(user *Users) (int64, error) {
 	query := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
