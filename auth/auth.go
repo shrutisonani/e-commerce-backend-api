@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"time"
 	"utils"
@@ -37,7 +38,7 @@ func (repository *Repository) Register(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	}	
+	}
 
 	// generate email token
 	token, _ := utils.GenerateToken()
@@ -45,7 +46,7 @@ func (repository *Repository) Register(c *gin.Context) {
 
 	// save token in email_verifications
 	emailToken := repository.SaveEmailToken(user.Id, token, expiry)
-	
+
 	if emailToken != nil {
 		log.Error(emailToken)
 		c.JSON(500, gin.H{"error": emailToken.Error()})
@@ -53,24 +54,22 @@ func (repository *Repository) Register(c *gin.Context) {
 		return
 	}
 
-	// update the user verify
-	isUserVerify := repository.VerifyUser(user.Id)
-
-	if isUserVerify != nil {
-		log.Error(isUserVerify)
-		c.JSON(500, gin.H{"error": isUserVerify.Error()})
-		c.AbortWithStatus(http.StatusInternalServerError)
+	// verify the email token
+	err = repository.VerifyEmailToken(token)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	c.JSON(201, gin.H{
-		"message": "user registered and verify email",
-		"user" : user,
+		"message": "user registered and email-verified successfully",
+		"user":    user,
 	})
 }
 
 // User login
-func (repository *Repository) Login(c *gin.Context)  {
+func (repository *Repository) Login(c *gin.Context) {
 	req := Users{}
 
 	// check auth login request
@@ -86,29 +85,29 @@ func (repository *Repository) Login(c *gin.Context)  {
 	if err != nil {
 		log.Error(err)
 		c.JSON(401, gin.H{"error": err.Error()})
-        return
-    }
+		return
+	}
 
 	// compare the password is correct or not
 	if !utils.CheckPassword(req.Password, user.Password) {
 		c.JSON(401, gin.H{"error": "invalid credentials"})
-        return
+		return
 	}
 
 	// check email is verifyed or not
 	if !user.IsVerified {
 		c.JSON(401, gin.H{"error": "email not verified"})
-        return
-    }
+		return
+	}
 
 	access, _ := utils.GenerateAccessToken(user.Id)
-    refresh, _ := utils.GenerateRefreshToken(user.Id)
+	refresh, _ := utils.GenerateRefreshToken(user.Id)
 
 	c.JSON(200, gin.H{
-        "access_token":  access,
-        "refresh_token": refresh,
-		"user": user,
-    })
+		"access_token":  access,
+		"refresh_token": refresh,
+		"user":          user,
+	})
 
 }
 
@@ -119,13 +118,19 @@ func (repository *Repository) CreateUser(user *Users) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	id, err := data.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 	user.Id = int(id) // update struct
 	return id, nil
+}
+
+// When email verification is success then make user is_verified
+func (repository *Repository) VerifyUser(userID int) error {
+	_, err := repository.Db.Exec("UPDATE users SET is_verified = true WHERE id = ?", userID)
+	return err
 }
 
 // Get user by email id
@@ -136,21 +141,60 @@ func (repository *Repository) GetUserByEmail(email string) (*Users, error) {
 }
 
 // Save the email token when user create
-func (repository *Repository) SaveEmailToken(userID int, tokenHash string, expiry time.Time) error {
+func (repository *Repository) SaveEmailToken(userID int, token string, expiry time.Time) error {
 	query := `INSERT INTO email_verifications (user_id, token, expires_at) VALUES (?, ?, ?)`
-	_, err := repository.Db.Exec(query, userID, tokenHash, expiry)
+	_, err := repository.Db.Exec(query, userID, token, expiry)
 	return err
 }
 
-// Get email token
-func (repository *Repository) GetEmailToken(tokenHash string) (*EmailVerifications, error) {
+// Get token with validation
+func (repository *Repository) GetValidEmailToken(token string) (*EmailVerifications, error) {
 	emailVerified := EmailVerifications{}
-	err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token = ?", tokenHash)
+	// err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token = ?", token)
+	err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token_hash = ? AND is_used = false AND expires_at > NOW()", token)
 	return &emailVerified, err
 }
 
-// When email verification is success then make user is_verified
-func (repository *Repository) VerifyUser(userID int) error {
-	_, err := repository.Db.Exec("UPDATE users SET is_verified = true WHERE id = ?", userID)
+// Mark valid emali token used
+func (repository *Repository) MarkEmailTokenUsed(id int) error {
+	_, err := repository.Db.Exec("UPDATE email_verifications SET is_used = true WHERE id = ?", id)
 	return err
+}
+
+func (repository *Repository) VerifyEmailToken(token string) error {
+
+	emailToken, err := repository.GetValidEmailToken(token)
+	if err != nil {
+		log.Error(err)
+		return errors.New("invalid or expired token")
+	}
+
+	// Mark user verified
+	err = repository.VerifyUser(emailToken.UserID)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	// Mark token used
+	return repository.MarkEmailTokenUsed(emailToken.UserID)
+}
+
+func (repository *Repository) VerifyEmail(c *gin.Context) {
+	token := c.Query("token")
+
+	if token == "" {
+		c.JSON(400, gin.H{"error": "token required"})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	err := repository.VerifyEmailToken(token)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "email verified successfully"})
 }
