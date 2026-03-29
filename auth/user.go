@@ -14,34 +14,6 @@ func NewUser(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
-func (repository *Repository) UserRegister(c *gin.Context) {
-	user := Users{}
-
-	// bind input data
-	if err := c.BindJSON(&user); err != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	// password
-	hashed, _ := utils.HashPassword(user.Password, 10)
-	user.Password = hashed
-
-	// insert data
-	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
-
-	_, err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
-
-	if err != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusCreated, user)
-}
-
 func (repository *Repository) Users(c *gin.Context) {
 
 	userList, err := repository.GetUsers()

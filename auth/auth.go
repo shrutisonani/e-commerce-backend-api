@@ -161,6 +161,7 @@ func (repository *Repository) MarkEmailTokenUsed(id int) error {
 	return err
 }
 
+// Verify the email token
 func (repository *Repository) VerifyEmailToken(token string) error {
 
 	emailToken, err := repository.GetValidEmailToken(token)
@@ -180,6 +181,7 @@ func (repository *Repository) VerifyEmailToken(token string) error {
 	return repository.MarkEmailTokenUsed(emailToken.UserID)
 }
 
+// Verify the email token
 func (repository *Repository) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
 
