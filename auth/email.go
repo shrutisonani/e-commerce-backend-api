@@ -26,13 +26,13 @@ func (repository *Repository) SaveEmailToken(userID int, token string, expiry ti
 func (repository *Repository) GetValidEmailToken(token string) (*EmailVerifications, error) {
 	emailVerified := EmailVerifications{}
 	// err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token = ?", token)
-	err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token_hash = ? AND is_used = false AND expires_at > NOW()", token)
+	err := repository.Db.Get(&emailVerified, "SELECT * FROM email_verifications WHERE token = ? AND is_used = false AND expires_at > UTC_TIMESTAMP()", token)
 	return &emailVerified, err
 }
 
 // Mark valid emali token used
 func (repository *Repository) MarkEmailTokenUsed(id int) error {
-	_, err := repository.Db.Exec("UPDATE email_verifications SET is_used = true WHERE id = ?", id)
+	_, err := repository.Db.Exec("UPDATE email_verifications SET is_used = true WHERE user_id = ?", id)
 	return err
 }
 

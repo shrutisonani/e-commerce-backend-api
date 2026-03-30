@@ -41,7 +41,8 @@ func (repository *Repository) Register(c *gin.Context) {
 
 	// generate email token
 	token, _ := utils.GenerateToken()
-	expiry := time.Now().Add(15 * time.Minute)
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	expiry := time.Now().In(loc).Add(15 * time.Minute)
 
 	// save token in email_verifications
 	emailToken := repository.SaveEmailToken(user.Id, token, expiry)
