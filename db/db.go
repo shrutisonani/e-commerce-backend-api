@@ -45,7 +45,7 @@ func NewSql() *sqlx.DB {
 	// MySQL connection string
 	dsn := username + ":" + password +
 		"@tcp(" + host + ":" + port + ")/" +
-		name + "?parseTime=true"
+		name + "?parseTime=true&loc=Asia%2FKolkata"
 
 	db = sqlx.MustConnect("mysql", dsn)
 

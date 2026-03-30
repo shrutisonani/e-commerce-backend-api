@@ -14,34 +14,7 @@ func NewUser(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
-func (repository *Repository) UserRegister(c *gin.Context) {
-	user := Users{}
-
-	// bind input data
-	if err := c.BindJSON(&user); err != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	// password
-	hashed, _ := utils.HashPassword(user.Password, 10)
-	user.Password = hashed
-
-	// insert data
-	query := `INSERT INTO users (name,email,password) VALUES (?,?,?)`
-
-	_, err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
-
-	if err != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusCreated, user)
-}
-
+// Default users
 func (repository *Repository) Users(c *gin.Context) {
 
 	userList, err := repository.GetUsers()
@@ -56,6 +29,36 @@ func (repository *Repository) Users(c *gin.Context) {
 
 }
 
+// Create the user (insert the data query)
+func (repository *Repository) CreateUser(user *Users) (int64, error) {
+	query := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
+	data, err := repository.Db.Exec(query, user.Name, user.Email, user.Password)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := data.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	user.Id = int(id) // update struct
+	return id, nil
+}
+
+// When email verification is success then make user is_verified
+func (repository *Repository) VerifyUser(userID int) error {
+	_, err := repository.Db.Exec("UPDATE users SET is_verified = true WHERE id = ?", userID)
+	return err
+}
+
+// Get user by email id
+func (repository *Repository) GetUserByEmail(email string) (*Users, error) {
+	user := Users{}
+	err := repository.Db.Get(&user, "SELECT * FROM users WHERE email = ?", email)
+	return &user, err
+}
+
+// Get all users
 func (repository *Repository) GetUsers() ([]Users, error) {
 
 	users := []Users{}
@@ -65,6 +68,7 @@ func (repository *Repository) GetUsers() ([]Users, error) {
 	return users, err
 }
 
+// Get user by id
 func (repository *Repository) UserById(c *gin.Context) {
 
 	user := Users{}
@@ -87,6 +91,7 @@ func (repository *Repository) UserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// Update user by id
 func (repository *Repository) UpdateUser(c *gin.Context) {
 
 	user := Users{}

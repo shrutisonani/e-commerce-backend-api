@@ -28,6 +28,7 @@ type RefreshTokens struct {
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // PASSWORD RESETS TABLE
@@ -36,6 +37,7 @@ type PasswordResets struct {
 	UserID    int       `json:"user_id"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // EMAIL VERIFICATIONS TABLE
@@ -45,6 +47,7 @@ type EmailVerifications struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 	IsUsed    bool      `json:"is_used"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // USER REGISTRATION
