@@ -1,19 +1,18 @@
 package auth
 
 import (
-	"time"
 	"errors"
 	"net/http"
-	
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewEmailVerification (db *sqlx.DB) *Repository {
-	return &Repository{Db:db}
+func NewEmailVerification(db *sqlx.DB) *Repository {
+	return &Repository{Db: db}
 }
-
 
 // Save the email token when user create
 func (repository *Repository) SaveEmailToken(userID int, token string, expiry time.Time) error {
