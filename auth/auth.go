@@ -14,7 +14,7 @@ func NewAuth(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
-// User registration
+// Register handles user registration
 func (repository *Repository) Register(c *gin.Context) {
 	user := Users{}
 
@@ -68,7 +68,7 @@ func (repository *Repository) Register(c *gin.Context) {
 	})
 }
 
-// User login
+// Login handles user login
 func (repository *Repository) Login(c *gin.Context) {
 	req := Users{}
 
@@ -100,8 +100,22 @@ func (repository *Repository) Login(c *gin.Context) {
 		return
 	}
 
+	// generate tokens
 	access, _ := utils.GenerateAccessToken(user.Id)
 	refresh, _ := utils.GenerateRefreshToken(user.Id)
+
+	// Store new refresh token
+	newHash := utils.HashToken(refresh)
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	expiry := time.Now().In(loc).Add(7 * 24 * time.Hour)
+
+	// Save the refresh token
+	err = repository.SaveRefreshToken(user.Id, newHash, expiry)
+	if err != nil {
+		log.Error(err)
+		c.JSON(500, gin.H{"error": "failed to save refresh token"})
+		return
+	}
 
 	c.JSON(200, gin.H{
 		"access_token":  access,
