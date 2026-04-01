@@ -101,7 +101,7 @@ func (repository *Repository) Login(c *gin.Context) {
 	}
 
 	// generate tokens
-	access, _ := utils.GenerateAccessToken(user.Id)
+	access, _ := utils.GenerateAccessToken(user.Id, user.Role)
 	refresh, _ := utils.GenerateRefreshToken(user.Id)
 
 	// Store new refresh token
