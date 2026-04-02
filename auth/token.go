@@ -104,7 +104,7 @@ func (repository *Repository) CheckRefreshToken(oldToken string) (string, string
 // Delete refresh token by hash (used for logout)
 func (repository *Repository) DeleteRefreshTokenByHash(tokenHash string) error {
 	_, err := repository.Db.Exec(
-		"DELETE FROM refresh_tokens WHERE token_hash = ?",
+		"DELETE FROM refresh_tokens WHERE token = ?",
 		tokenHash,
 	)
 	return err
