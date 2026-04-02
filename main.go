@@ -11,30 +11,36 @@ import (
 var router *gin.Engine
 
 func setupRouter() *gin.Engine {
-	sqlDb := db.NewSql()
+	sqlDB := db.NewSql()
 
 	router := gin.Default()
 
-	userRepo := auth.NewUser(sqlDb)
-	userAuth := auth.NewAuth(sqlDb)
+	userRepo := auth.NewUser(sqlDB)
+	userAuth := auth.NewAuth(sqlDB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Pong",
-			"db":      sqlDb != nil,
+			"db":      sqlDB != nil,
 		})
 	})
 
+	// Auth routes
 	router.POST("/register", userAuth.Register)
 	router.POST("login", userAuth.Login)
 	router.GET("/verify-email", userAuth.VerifyEmail)
 	router.POST("/refresh", userAuth.RefreshToken)
+	router.POST("/logout", userAuth.Logout)
+
+	// Protected routes
 	protected := router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/users", userRepo.Users)
+		protected.POST("/logout-all", userAuth.LogoutAll)
 	}
 
+	// User routes
 	user := router.Group("/api/user")
 	{
 		user.GET("/", userRepo.Users)

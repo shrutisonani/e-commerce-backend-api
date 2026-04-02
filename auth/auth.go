@@ -122,5 +122,42 @@ func (repository *Repository) Login(c *gin.Context) {
 		"refresh_token": refresh,
 		"user":          user,
 	})
+}
 
+// User logout by invalidating the refresh token
+func (repository *Repository) Logout(c *gin.Context) {
+
+	req := RefreshTokenRequest{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+
+	tokenHash := utils.HashToken(req.RefreshToken)
+
+	// Delete the refresh token from the database to invalidate it
+	err := repository.DeleteRefreshTokenByHash(tokenHash)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "logout failed"})
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "logged out successfully"})
+}
+
+// Logout from all devices by deleting all refresh tokens for the user
+func (repository *Repository) LogoutAll(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	// Delete all refresh tokens for the user to log out from all devices
+	err := repository.DeleteAllRefreshTokens(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "logout failed"})
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "logged out from all devices"})
 }

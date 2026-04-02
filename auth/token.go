@@ -14,12 +14,14 @@ func NewAuthToken(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
+// Save the refresh token in the database
 func (repository *Repository) SaveRefreshToken(userID int, token string, expiry time.Time) error {
 	query := `INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, ?)`
 	_, err := repository.Db.Exec(query, userID, token, expiry)
 	return err
 }
 
+// Get refresh token by token
 func (repository *Repository) GetRefreshToken(token string) (*RefreshTokens, error) {
 	rt := RefreshTokens{}
 
@@ -31,15 +33,16 @@ func (repository *Repository) GetRefreshToken(token string) (*RefreshTokens, err
 	return &rt, err
 }
 
+// Delete refresh token by ID
 func (repository *Repository) DeleteRefreshToken(id int) error {
 	_, err := repository.Db.Exec("DELETE FROM refresh_tokens WHERE id = ?", id)
 	return err
 }
 
+// Refreshing tokens
 func (repository *Repository) RefreshToken(c *gin.Context) {
-	var req struct {
-		RefreshToken string `json:"refresh_token"`
-	}
+
+	req := RefreshTokenRequest{}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "invalid request"})
@@ -60,6 +63,7 @@ func (repository *Repository) RefreshToken(c *gin.Context) {
 	})
 }
 
+// Check the refresh token, generate new tokens, and rotate the refresh token
 func (repository *Repository) CheckRefreshToken(oldToken string) (string, string, error) {
 
 	// Check in DB
@@ -95,4 +99,22 @@ func (repository *Repository) CheckRefreshToken(oldToken string) (string, string
 	}
 
 	return newAccess, newRefresh, nil
+}
+
+// Delete refresh token by hash (used for logout)
+func (repository *Repository) DeleteRefreshTokenByHash(tokenHash string) error {
+	_, err := repository.Db.Exec(
+		"DELETE FROM refresh_tokens WHERE token_hash = ?",
+		tokenHash,
+	)
+	return err
+}
+
+// Delete all refresh tokens for a user (used for logout from all devices)
+func (repository *Repository) DeleteAllRefreshTokens(userID int) error {
+	_, err := repository.Db.Exec(
+		"DELETE FROM refresh_tokens WHERE user_id = ?",
+		userID,
+	)
+	return err
 }
