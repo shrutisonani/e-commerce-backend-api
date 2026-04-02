@@ -3,6 +3,7 @@ package main
 import (
 	"auth"
 	"db"
+	"middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +29,12 @@ func setupRouter() *gin.Engine {
 	router.POST("login", userAuth.Login)
 	router.GET("/verify-email", userAuth.VerifyEmail)
 	router.POST("/refresh", userAuth.RefreshToken)
+	protected := router.Group("/api")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.GET("/users", userRepo.Users)
+	}
+
 	user := router.Group("/api/user")
 	{
 		user.GET("/", userRepo.Users)
