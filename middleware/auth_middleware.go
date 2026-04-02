@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -38,8 +37,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			log.Print(token)
-			log.Printf("Invalid token: %v", err)
 			c.AbortWithStatusJSON(401, gin.H{"error": "invalid or expired token"})
 			return
 		}
