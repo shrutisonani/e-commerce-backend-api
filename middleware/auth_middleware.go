@@ -8,7 +8,8 @@ import (
 )
 
 type Claims struct {
-	UserID int `json:"user_id"`
+	UserID int    `json:"user_id"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -41,8 +42,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Store user_id in context
+		// Store user_id, user_role in context
 		c.Set("user_id", claims.UserID)
+		c.Set("role", claims.Role)
 
 		c.Next()
 	}
