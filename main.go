@@ -34,24 +34,24 @@ func setupRouter() *gin.Engine {
 
 	// Protected routes
 	protected := router.Group("/api")
-
-	// Apply auth middleware to all protected routes
 	protected.Use(middleware.AuthMiddleware())
 
 	// Second way to used role middleware with allowed roles
-	adminRoutes := protected.Group("/")
+	adminRoutes := protected.Group("/v1")
 	adminRoutes.Use(middleware.RoleMiddleware("SUPER_ADMIN"))
 	{
 		adminRoutes.GET("/users", userRepo.Users)
-		protected.POST("/logout-all", userAuth.LogoutAll)
+		adminRoutes.GET("/user/:id", middleware.OwnerOrAdminMiddleware("id"), userRepo.UserById)
 	}
 
 	// Second way to used role middleware with allowed roles
-	userRoutes := protected.Group("/")
+	userRoutes := protected.Group("/v2")
 	userRoutes.Use(middleware.RoleMiddleware("USER"))
 	{
-		userRoutes.GET("/user/:id", userRepo.UserById)
+		userRoutes.GET("/user/:id", middleware.OwnerOrAdminMiddleware("id"), userRepo.UserById)
 		userRoutes.PATCH("/user/:id", userRepo.UpdateUser)
+		userRoutes.POST("/user/logout", userAuth.Logout)
+		userRoutes.POST("/user/logout-all", userAuth.LogoutAll)
 	}
 
 	return router
