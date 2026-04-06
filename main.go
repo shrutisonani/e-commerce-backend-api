@@ -27,7 +27,7 @@ func setupRouter() *gin.Engine {
 
 	// Auth routes
 	router.POST("/register", userAuth.Register)
-	router.POST("login", userAuth.Login)
+	router.POST("/login", userAuth.Login)
 	router.GET("/verify-email", userAuth.VerifyEmail)
 	router.POST("/refresh", userAuth.RefreshToken)
 	router.POST("/logout", userAuth.Logout)
@@ -41,14 +41,14 @@ func setupRouter() *gin.Engine {
 	adminRoutes.Use(middleware.RoleMiddleware("SUPER_ADMIN"))
 	{
 		adminRoutes.GET("/users", userRepo.Users)
-		adminRoutes.GET("/user/:id", middleware.OwnerOrAdminMiddleware("id"), userRepo.UserById)
 	}
 
 	// Second way to used role middleware with allowed roles
+	// If we set required role to USER then both USER and SUPER_ADMIN can access the api because of the role hierarchy
 	userRoutes := protected.Group("/v2")
 	userRoutes.Use(middleware.RoleMiddleware("USER"))
 	{
-		userRoutes.GET("/user/:id", middleware.OwnerOrAdminMiddleware("id"), userRepo.UserById)
+		userRoutes.GET("/user/:id", userRepo.UserById)
 		userRoutes.PATCH("/user/:id", userRepo.UpdateUser)
 		userRoutes.POST("/user/logout", userAuth.Logout)
 		userRoutes.POST("/user/logout-all", userAuth.LogoutAll)
