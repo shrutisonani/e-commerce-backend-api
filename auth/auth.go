@@ -54,6 +54,9 @@ func (repository *Repository) Register(c *gin.Context) {
 		return
 	}
 
+	// link
+	// verificationLink := "http://localhost:8080/verify-email?token=" + token
+
 	// verify the email token
 	err = repository.VerifyEmailToken(token)
 	if err != nil {
