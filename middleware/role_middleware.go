@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"

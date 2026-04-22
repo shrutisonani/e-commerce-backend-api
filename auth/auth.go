@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"templates"
 	"time"
 	"utils"
 
@@ -54,8 +55,14 @@ func (repository *Repository) Register(c *gin.Context) {
 		return
 	}
 
-	// link
-	// verificationLink := "http://localhost:8080/verify-email?token=" + token
+	// send email
+	emailBody := templates.GenerateVerificationEmail(token)
+
+	templates.SendEmail(
+		user.Email,
+		"Verify your email",
+		emailBody,
+	)
 
 	// verify the email token
 	err = repository.VerifyEmailToken(token)
