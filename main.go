@@ -6,6 +6,7 @@ import (
 	"middleware"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 var router *gin.Engine
@@ -58,6 +59,8 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+
+	godotenv.Load()
 
 	router = setupRouter()
 

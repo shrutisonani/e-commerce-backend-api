@@ -10,10 +10,13 @@ replace utils => ./utils
 
 replace middleware => ./middleware
 
+replace templates => ./templates
+
 require (
 	auth v0.0.0-00010101000000-000000000000
 	db v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.12.0
+	github.com/joho/godotenv v1.5.1
 	middleware v0.0.0-00010101000000-000000000000
 )
 
@@ -52,5 +55,6 @@ require (
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
+	templates v0.0.0-00010101000000-000000000000 // indirect
 	utils v0.0.0-00010101000000-000000000000 // indirect
 )

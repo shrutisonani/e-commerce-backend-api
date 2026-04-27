@@ -6,12 +6,15 @@ replace db => ./db
 
 replace utils => ../utils
 
+replace templates => ../templates
+
 require utils v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/sirupsen/logrus v1.9.4
+	templates v0.0.0-00010101000000-000000000000
 )
 
 require (
