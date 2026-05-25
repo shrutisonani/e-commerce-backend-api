@@ -56,13 +56,13 @@ func (repository *Repository) Register(c *gin.Context) {
 	}
 
 	// send email
-	emailBody := templates.GenerateVerificationEmail(token)
+	// emailBody := templates.GenerateVerificationEmail(token)
 
-	templates.SendEmail(
-		user.Email,
-		"Verify your email",
-		emailBody,
-	)
+	// templates.SendEmail(
+	// 	user.Email,
+	// 	"Verify your email",
+	// 	emailBody,
+	// )
 
 	// verify the email token
 	err = repository.VerifyEmailToken(token)
