@@ -62,6 +62,7 @@ func setupRouter() *gin.Engine {
 			categoryRoutes.GET("", categoryRepo.Categories)
 			categoryRoutes.GET("/:id", categoryRepo.CategoryByID)
 			categoryRoutes.PATCH("/:id", categoryRepo.UpdateCategory)
+			categoryRoutes.DELETE("/:id", categoryRepo.DeleteCategory)
 		}
 	}
 
