@@ -4,6 +4,7 @@ import (
 	"auth"
 	"db"
 	"middleware"
+	"category"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -18,6 +19,7 @@ func setupRouter() *gin.Engine {
 
 	userRepo := auth.NewUser(sqlDB)
 	userAuth := auth.NewAuth(sqlDB)
+	categoryRepo := category.NewCategory(sqlDB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -53,6 +55,11 @@ func setupRouter() *gin.Engine {
 		userRoutes.PATCH("/user/:id", userRepo.UpdateUser)
 		userRoutes.POST("/user/logout", userAuth.Logout)
 		userRoutes.POST("/user/logout-all", userAuth.LogoutAll)
+
+		categoryRoutes := userRoutes.Group("/categories")
+		{
+			categoryRoutes.POST("", categoryRepo.CreateCategory)
+		}
 	}
 
 	return router
