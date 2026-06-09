@@ -43,7 +43,16 @@ func setupRouter() *gin.Engine {
 	adminRoutes := protected.Group("/v1")
 	adminRoutes.Use(middleware.RoleMiddleware("SUPER_ADMIN"))
 	{
+		// GEt all users for SUPER_ADMIN only
 		adminRoutes.GET("/users", userRepo.Users)
+
+		// Category routes for SUPER_ADMIN only
+		categoryRoutes := adminRoutes.Group("/category")
+		{
+			categoryRoutes.POST("", categoryRepo.CreateCategory)
+			categoryRoutes.PATCH("/:id", categoryRepo.UpdateCategory)
+			categoryRoutes.DELETE("/:id", categoryRepo.DeleteCategory)
+		}
 	}
 
 	// Second way to used role middleware with allowed roles
@@ -51,18 +60,21 @@ func setupRouter() *gin.Engine {
 	userRoutes := protected.Group("/v2")
 	userRoutes.Use(middleware.RoleMiddleware("USER"))
 	{
-		userRoutes.GET("/user/:id", userRepo.UserById)
-		userRoutes.PATCH("/user/:id", userRepo.UpdateUser)
-		userRoutes.POST("/user/logout", userAuth.Logout)
-		userRoutes.POST("/user/logout-all", userAuth.LogoutAll)
-
-		categoryRoutes := userRoutes.Group("/categories")
+		// User routes for both USER and SUPER_ADMIN
+		user := userRoutes.Group("/user")
 		{
-			categoryRoutes.POST("", categoryRepo.CreateCategory)
+			user.GET("/:id", userRepo.UserById)
+			user.PATCH("/:id", userRepo.UpdateUser)
+			user.POST("/logout", userAuth.Logout)
+			user.POST("/logout-all", userAuth.LogoutAll)
+		}
+		
+
+		// Category routes for both USER and SUPER_ADMIN
+		categoryRoutes := userRoutes.Group("/category")
+		{
 			categoryRoutes.GET("", categoryRepo.Categories)
 			categoryRoutes.GET("/:id", categoryRepo.CategoryByID)
-			categoryRoutes.PATCH("/:id", categoryRepo.UpdateCategory)
-			categoryRoutes.DELETE("/:id", categoryRepo.DeleteCategory)
 		}
 	}
 

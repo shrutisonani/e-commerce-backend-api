@@ -163,13 +163,19 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 	})
 }
 
+// Delete category by id
 func (repository *Repository) DeleteCategory(c *gin.Context) {
 	id := c.Param("id")
 
-	query := "DELETE FROM categories WHERE id = ?"	
+	query := "DELETE FROM categories WHERE id = ? and is_active = true"	
 	_, err := repository.Db.Exec(query, id)
 	if err != nil {
 		log.Error(err)
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Category not found or inactive"})
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 		c.JSON(500, gin.H{"error": "Failed to delete category"})
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
