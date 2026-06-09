@@ -59,6 +59,7 @@ func setupRouter() *gin.Engine {
 		categoryRoutes := userRoutes.Group("/categories")
 		{
 			categoryRoutes.POST("", categoryRepo.CreateCategory)
+			categoryRoutes.GET("", categoryRepo.Categories)
 		}
 	}
 
