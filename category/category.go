@@ -1,6 +1,7 @@
 package category
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -65,4 +66,25 @@ func (repository *Repository) GetCategories() ([]Categories, error) {
 	err := repository.Db.Select(&categories, "SELECT * FROM categories")
 	
 	return categories, err
+}
+
+func (repository *Repository) CategoryByID(c *gin.Context) {
+
+	category := Categories{}
+
+	id := c.Param("id")
+
+	err := repository.Db.Get(&category, "SELECT * FROM categories WHERE id= '"+id+"' and is_active = true")
+
+	if err != nil {
+		log.Error(err)
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Category not found or inactive"})
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, category)	
 }
