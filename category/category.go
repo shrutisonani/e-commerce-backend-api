@@ -12,6 +12,21 @@ func NewCategory(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
+// Default categories
+func (repository *Repository) Categories(c *gin.Context) {
+
+	categoryList, err := repository.GetCategories()
+
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, categoryList)
+}
+
+// create the category (Insert the data query)
 func (repository *Repository) CreateCategory(c *gin.Context) {
 
 	 req := CreateCategoryRequest{} 
@@ -40,4 +55,14 @@ func (repository *Repository) CreateCategory(c *gin.Context) {
 		"message": "Category created successfully", 
 		"category": req,
 	})
+}
+
+// Get all categories
+func (repository *Repository) GetCategories() ([]Categories, error) {
+
+	categories := []Categories{}
+	
+	err := repository.Db.Select(&categories, "SELECT * FROM categories")
+	
+	return categories, err
 }
