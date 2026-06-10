@@ -5,6 +5,7 @@ import (
 	"db"
 	"middleware"
 	"category"
+	"brand"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -20,6 +21,7 @@ func setupRouter() *gin.Engine {
 	userRepo := auth.NewUser(sqlDB)
 	userAuth := auth.NewAuth(sqlDB)
 	categoryRepo := category.NewCategory(sqlDB)
+	brandRepo := brand.NewBrand(sqlDB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -53,6 +55,14 @@ func setupRouter() *gin.Engine {
 			categoryRoutes.PATCH("/:id", categoryRepo.UpdateCategory)
 			categoryRoutes.DELETE("/:id", categoryRepo.DeleteCategory)
 		}
+
+		// Brand routes for SUPER_ADMIN only
+		brandRoutes := adminRoutes.Group("/brand")
+		{
+			brandRoutes.POST("", brandRepo.CreateBrand)
+			brandRoutes.PATCH("/:id", brandRepo.UpdateBrand)
+			brandRoutes.DELETE("/:id", brandRepo.DeleteBrand)
+		}
 	}
 
 	// Second way to used role middleware with allowed roles
@@ -75,6 +85,13 @@ func setupRouter() *gin.Engine {
 		{
 			categoryRoutes.GET("", categoryRepo.Categories)
 			categoryRoutes.GET("/:id", categoryRepo.CategoryByID)
+		}
+
+		// Brand routes for both USER and SUPER_ADMIN
+		brandRoutes := userRoutes.Group("/brand")
+		{
+			brandRoutes.GET("", brandRepo.Brands)
+			brandRoutes.GET("/:id", brandRepo.BrandByID)
 		}
 	}
 
