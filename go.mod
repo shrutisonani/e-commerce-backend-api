@@ -16,6 +16,8 @@ replace category => ./category
 
 replace brand => ./brand
 
+replace product => ./product
+
 require (
 	auth v0.0.0-00010101000000-000000000000
 	brand v0.0.0-00010101000000-000000000000
@@ -24,6 +26,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/joho/godotenv v1.5.1
 	middleware v0.0.0-00010101000000-000000000000
+	product v0.0.0-00010101000000-000000000000
 )
 
 require (
