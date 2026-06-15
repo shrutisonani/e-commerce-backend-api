@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/shrutisonani/e-commerce-backend-api/routes"
 )
 
 var router *gin.Engine
@@ -32,12 +33,16 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
-	// Auth routes
-	router.POST("/register", userAuth.Register)
-	router.POST("/login", userAuth.Login)
-	router.GET("/verify-email", userAuth.VerifyEmail)
-	router.POST("/refresh", userAuth.RefreshToken)
-	router.POST("/logout", userAuth.Logout)
+	api := router.Group("/api")
+
+	// Public auth api
+	routes.RegisterAuthRoutes(api, userAuth)
+
+	// Public authenticated auth api
+	protect := api.Group("")
+	protect.Use(middleware.AuthMiddleware())
+
+	routes.RegisterProtectedAuthRoutes(protect, userAuth)
 
 	// Protected routes
 	protected := router.Group("/api")
@@ -85,8 +90,6 @@ func setupRouter() *gin.Engine {
 		{
 			user.GET("/:id", userRepo.UserById)
 			user.PATCH("/:id", userRepo.UpdateUser)
-			user.POST("/logout", userAuth.Logout)
-			user.POST("/logout-all", userAuth.LogoutAll)
 		}
 
 		// Category routes for both USER and SUPER_ADMIN
