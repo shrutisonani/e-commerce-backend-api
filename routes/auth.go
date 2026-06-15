@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
+func AuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
 	authGroup := rg.Group("/auth")
 	{
 		authGroup.POST("/register", authRepo.Register)
@@ -15,7 +15,7 @@ func RegisterAuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
 	}
 }
 
-func RegisterProtectedAuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
+func ProtectedAuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
 	authGroup := rg.Group("/auth")
 	{
 		authGroup.POST("/refresh", authRepo.RefreshToken)
