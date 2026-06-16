@@ -10,5 +10,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 )

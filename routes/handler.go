@@ -1,7 +1,9 @@
 package routes
 
-type Repository struct {
-	Db *sqlx.DB
+import "github.com/jmoiron/sqlx"
+
+type Handler struct {
+	DB *sqlx.DB
 }
 
 func NewHandler(db *sqlx.DB) *Handler {

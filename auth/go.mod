@@ -2,11 +2,9 @@ module github.com/shrutisonani/e-commerce-backend-api/auth
 
 go 1.25.0
 
-replace db => ./db
+replace github.com/shrutisonani/e-commerce-backend-api/utils => ../utils
 
-replace utils => ../utils
-
-replace templates => ../templates
+replace github.com/shrutisonani/e-commerce-backend-api/templates => ../templates
 
 require utils v0.0.0-00010101000000-000000000000
 
