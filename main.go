@@ -42,7 +42,7 @@ func setupRouter() *gin.Engine {
 	protect := api.Group("")
 	protect.Use(middleware.AuthMiddleware())
 
-	routes.ProtectedAuthRoutes(protect, userAuth)
+	// routes.ProtectedAuthRoutes(protect, userAuth)
 
 	// Protected routes
 	protected := router.Group("/api")

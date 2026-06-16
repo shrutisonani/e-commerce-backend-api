@@ -1,5 +1,11 @@
 package routes
 
+import (
+	"category"
+
+	"github.com/gin-gonic/gin"
+)
+
 func CategoryRoutes(rg *gin.RouterGroup, categoryRepo *category.Repository) {
 
 	category := rg.Group("/category")
