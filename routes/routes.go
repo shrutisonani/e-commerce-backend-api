@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shrutisonani/e-commerce-backend-api/brand"
 	"github.com/shrutisonani/e-commerce-backend-api/middleware"
+	"github.com/shrutisonani/e-commerce-backend-api/product"
 )
 
 func (h *Handler) RegisterRoutes(router *gin.Engine) {
@@ -16,6 +17,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	authRepo := auth.NewAuth(h.DB)
 	categoryRepo := category.NewCategory(h.DB)
 	brandRepo := brand.NewBrand(h.DB)
+	productRepo := product.NewProduct(h.DB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -40,6 +42,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	UserRoutes(userRoutes, authRepo)         // users
 	CategoryRoutes(userRoutes, categoryRepo) // category
 	BrandRoutes(userRoutes, brandRepo)       //brand
+	ProductRoutes(userRoutes, productRepo)   // product
 
 	// SUPER_ADMIN
 	adminRoutes := protected.Group("/v1")
@@ -48,5 +51,6 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	AdminUserRoutes(adminRoutes, authRepo)         // users
 	AdminCategoryRoutes(adminRoutes, categoryRepo) // category
 	AdminBrandRoutes(adminRoutes, brandRepo)       // brand
+	AdminProductRoutes(adminRoutes, productRepo)   // product
 
 }
