@@ -2,6 +2,7 @@ package routes
 
 import (
 	"auth"
+	"category"
 	"db"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 
 	// repository
 	authRepo := auth.NewAuth(h.DB)
+	categoryRepo := category.NewCategory(h.DB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -33,12 +35,14 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	userRoutes := protected.Group("/v2")
 	userRoutes.Use(middleware.RoleMiddleware("USER"))
 
-	UserRoutes(userRoutes, authRepo) // users
+	UserRoutes(userRoutes, authRepo)         // users
+	CategoryRoutes(userRoutes, categoryRepo) // category
 
 	// SUPER_ADMIN
 	adminRoutes := protected.Group("/v1")
 	adminRoutes.Use(middleware.RoleMiddleware("SUPER_ADMIN"))
 
-	AdminUserRoutes(adminRoutes, authRepo) // users
+	AdminUserRoutes(adminRoutes, authRepo)         // users
+	AdminCategoryRoutes(adminRoutes, categoryRepo) // category
 
 }
