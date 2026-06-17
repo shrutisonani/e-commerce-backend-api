@@ -149,3 +149,5 @@ func (repository *Repository) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 
 }
+
+// Implement delete user or deactivate user

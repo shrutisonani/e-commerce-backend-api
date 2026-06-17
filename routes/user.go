@@ -10,8 +10,14 @@ func UserRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
 
 	user := rg.Group("/user")
 
-	user.GET("", authRepo.Users)            //admin
-	user.GET("/:id", authRepo.UserById)     // public
-	user.PATCH("/:id", authRepo.UpdateUser) //public
-	// user.DELETE("/:id", authRepo.DeleteUser) //public
+	user.GET("/:id", authRepo.UserById)
+	user.PATCH("/:id", authRepo.UpdateUser)
+	// user.DELETE("/:id", authRepo.DeleteUser)
+}
+
+func AdminUserRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
+
+	user := rg.Group("/users")
+
+	user.GET("", authRepo.Users) //admin
 }
