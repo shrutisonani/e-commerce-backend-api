@@ -1,25 +1,26 @@
 package routes
 
-// import (
-// 	"auth"
+import (
+	"auth"
+	"db"
 
-// 	"github.com/gin-gonic/gin"
-// )
+	"github.com/gin-gonic/gin"
+)
 
-// func (h *Handler) RegisterRoutes(router *gin.Engine) {
+func (h *Handler) RegisterRoutes(router *gin.Engine) {
 
-// 	// repository
-// 	authRepo := auth.NewRepository(h.DB)
+	// repository
+	authRepo := auth.NewAuth(h.DB)
 
-// 	router.GET("/api/ping", func(c *gin.Context) {
-// 		c.JSON(200, gin.H{
-// 			"message": "Pong",
-// 			"db":      sqlDB != nil,
-// 		})
-// 	})
+	router.GET("/api/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Pong",
+			"db":      db.NewSql() != nil,
+		})
+	})
 
-// 	api := router.Group("/api")
+	api := router.Group("/api")
 
-// 	// Public Routes
-// 	RegisterAuthRoutes(api, authRepo)
-// }
+	// Public Routes
+	AuthRoutes(api, authRepo)
+}
