@@ -4,6 +4,7 @@ import (
 	"auth"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shrutisonani/e-commerce-backend-api/middleware"
 )
 
 func AuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
@@ -15,11 +16,11 @@ func AuthRoutes(rg *gin.RouterGroup, authRepo *auth.Repository) {
 	authGroup.GET("/verify-email", authRepo.VerifyEmail)
 
 	// Public authenticated auth api
-	// protected := api.Group("")
-	// protected.Use(middleware.AuthMiddleware())
+	protected := authGroup.Group("")
+	protected.Use(middleware.AuthMiddleware())
 
-	// protected.POST("/refresh", authRepo.RefreshToken)
-	// protected.POST("/logout", authRepo.Logout)
-	// protected.POST("/logout-all", authRepo.LogoutAll)
+	protected.POST("/refresh", authRepo.RefreshToken)
+	protected.POST("/logout", authRepo.Logout)
+	protected.POST("/logout-all", authRepo.LogoutAll)
 
 }
