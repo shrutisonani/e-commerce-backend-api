@@ -193,7 +193,7 @@ func (repository *Repository) DeleteProduct(c *gin.Context) {
 
 	id := c.Param("id")
 
-	query := "DELETE FROM product WHERE id = ? and is_active = true"
+	query := "DELETE FROM products WHERE id = ? and is_active = true"
 
 	_, err := repository.Db.Exec(query, id)
 
