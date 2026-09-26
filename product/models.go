@@ -23,9 +23,6 @@ type Products struct {
 	IsActive         bool      `json:"is_active"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
-
-	Variants []ProductVariant `json:"variants,omitempty"`
-	Images   []ProductImages  `json:"images,omitempty"`
 }
 
 // CREATE PRODUCT REQUEST
@@ -103,4 +100,19 @@ type CreateImageRequest struct {
 	VariantID    int    `json:"variant_id"`
 	AllText      string `json:"all_text"`
 	DisplayOrder int    `json:"display_order"`
+}
+
+// UPDATE IMAGE REQUEST
+type UpdateImageRequest struct {
+	ImageURL     *string `json:"image_url"`
+	VariantID    *int    `json:"variant_id"`
+	AllText      *string `json:"all_text"`
+	DisplayOrder *int    `json:"display_order"`
+}
+
+// PRODUCT DETAIL RESPONSE
+type ProductDetailResponse struct {
+	Product  Products         `json:"product"`
+	Variants []ProductVariant `json:"variants"`
+	Images   []ProductImages  `json:"images"`
 }
