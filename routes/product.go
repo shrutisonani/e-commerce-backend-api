@@ -9,7 +9,7 @@ func ProductRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
 
 	product := rg.Group("/product")
 
-	product.GET("", productRepo.Products)
+	product.GET("", productRepo.GetProducts)
 	product.GET("/:id", productRepo.ProductByID)
 }
 

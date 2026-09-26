@@ -1,13 +1,17 @@
 package product
 
 import (
+	"category"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/shrutisonani/e-commerce-backend-api/brand"
 )
 
 type Repository struct {
-	Db *sqlx.DB
+	Db       *sqlx.DB
+	Category *category.Repository
+	Brand    *brand.Repository
 }
 
 // PRODUCTS TABLE

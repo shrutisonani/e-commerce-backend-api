@@ -17,7 +17,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	authRepo := auth.NewAuth(h.DB)
 	categoryRepo := category.NewCategory(h.DB)
 	brandRepo := brand.NewBrand(h.DB)
-	productRepo := product.NewProduct(h.DB)
+	productRepo := product.NewProduct(h.DB, categoryRepo, brandRepo)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
