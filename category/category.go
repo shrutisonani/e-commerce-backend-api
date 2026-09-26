@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewCategory(db *sqlx.DB) *Repository {
@@ -30,30 +30,30 @@ func (repository *Repository) Categories(c *gin.Context) {
 // create the category (Insert the data query)
 func (repository *Repository) CreateCategory(c *gin.Context) {
 
-	 req := CreateCategoryRequest{} 
+	req := CreateCategoryRequest{}
 
-	 if err := c.BindJSON(&req); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		log.Error(err)
 		c.JSON(400, gin.H{"error": "Invalid request"})
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
-	 }
+	}
 
-	 query := `
+	query := `
 		INSERT INTO categories
 		(name, description, slug, image_url, parent_id)
 		VALUES (?, ?, ?, ?, ?)`
 
 	_, err := repository.Db.Exec(query, req.Name, req.Description, req.Slug, req.ImageURL, req.ParentID)
-	 if err != nil {
+	if err != nil {
 		log.Error(err)
 		c.JSON(500, gin.H{"error": "Failed to create category"})
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	 }
+	}
 
-	 c.JSON(http.StatusOK, gin.H{
-		"message": "Category created successfully", 
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Category created successfully",
 		"category": req,
 	})
 }
@@ -62,10 +62,22 @@ func (repository *Repository) CreateCategory(c *gin.Context) {
 func (repository *Repository) GetCategories() ([]Categories, error) {
 
 	categories := []Categories{}
-	
+
 	err := repository.Db.Select(&categories, "SELECT * FROM categories")
-	
+
 	return categories, err
+}
+
+// Check category is exists and active
+func (repository *Repository) CheckCategoryExists(id int) (bool, error) {
+	exists := false
+
+	err := repository.Db.Get(&exists,
+		`SELECT EXISTS(SELECT 1 FROM categories WHERE id = ? AND is_active = true)`,
+		id,
+	)
+
+	return exists, err
 }
 
 // Get category by id
@@ -87,7 +99,7 @@ func (repository *Repository) CategoryByID(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, category)	
+	c.JSON(http.StatusOK, category)
 }
 
 // Update category by id
@@ -99,7 +111,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 
 	// Check if the category exists and is active before updating
 	err := repository.Db.Get(
-		&category, 
+		&category,
 		"SELECT * FROM categories WHERE id= ? and is_active = true",
 		id,
 	)
@@ -113,7 +125,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 		}
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	}	
+	}
 
 	// Bind the JSON body to the input struct
 	input := UpdateCategoryRequest{}
@@ -123,7 +135,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 	}
 
 	// merge the existing category data with the new input data
-	if input.Name != nil  {
+	if input.Name != nil {
 		category.Name = *input.Name
 	}
 	if input.Description != nil {
@@ -149,7 +161,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 		WHERE id = ? and is_active = true`
 
 	_, err = repository.Db.Exec(query, category.Name, category.Description, category.Slug, category.ImageURL, category.ParentID, category.IsActive, id)
-	
+
 	if err != nil {
 		log.Error(err)
 		c.JSON(500, gin.H{"error": "Failed to update category"})
@@ -158,7 +170,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Category updated successfully",
+		"message":  "Category updated successfully",
 		"category": category,
 	})
 }
@@ -167,7 +179,7 @@ func (repository *Repository) UpdateCategory(c *gin.Context) {
 func (repository *Repository) DeleteCategory(c *gin.Context) {
 	id := c.Param("id")
 
-	query := "DELETE FROM categories WHERE id = ? and is_active = true"	
+	query := "DELETE FROM categories WHERE id = ? and is_active = true"
 	_, err := repository.Db.Exec(query, id)
 	if err != nil {
 		log.Error(err)
@@ -183,4 +195,4 @@ func (repository *Repository) DeleteCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Category deleted successfully",
 	})
-}	
+}

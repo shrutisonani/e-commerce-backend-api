@@ -1,4 +1,4 @@
-package	brand
+package brand
 
 import (
 	"database/sql"
@@ -14,11 +14,10 @@ func NewBrand(db *sqlx.DB) *Repository {
 	return &Repository{Db: db}
 }
 
-
 // Default brands
 func (repository *Repository) Brands(c *gin.Context) {
 
-	brandList, err := repository.GetBrands()	
+	brandList, err := repository.GetBrands()
 
 	if err != nil {
 		log.Error(err)
@@ -30,46 +29,58 @@ func (repository *Repository) Brands(c *gin.Context) {
 }
 
 // create the brand (Insert the data query)
-func (repository *Repository) CreateBrand(c *gin.Context) {		
+func (repository *Repository) CreateBrand(c *gin.Context) {
 	req := CreateBrandRequest{}
 
 	if err := c.BindJSON(&req); err != nil {
-	   log.Error(err)
-	   c.JSON(400, gin.H{"error": "Invalid request"})
-	   c.AbortWithStatus(http.StatusBadRequest)
-	   return
+		log.Error(err)
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	query := `
 	   INSERT INTO product_brands						
 	   (name, slug, logo_url)
 	   VALUES (?, ?, ?)`
-	
+
 	_, err := repository.Db.Exec(query, req.Name, req.Slug, req.LogoURL)
-	
+
 	if err != nil {
-	   log.Error(err)
-	   c.JSON(500, gin.H{"error": "Failed to create brand"})
-	   c.AbortWithStatus(http.StatusInternalServerError)
-	   return
+		log.Error(err)
+		c.JSON(500, gin.H{"error": "Failed to create brand"})
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-	   "message": "Brand created successfully", 
-	   "brand": req,
+		"message": "Brand created successfully",
+		"brand":   req,
 	})
 }
 
 // Get all brands
 func (repository *Repository) GetBrands() ([]Brands, error) {
-	
+
 	brands := []Brands{}
-	
+
 	query := "SELECT id, name, slug, logo_url, is_active, created_at, updated_at FROM product_brands WHERE is_active = true"
-	
+
 	err := repository.Db.Select(&brands, query)
-	
+
 	return brands, err
+}
+
+// Check brand is exists and active
+func (repository *Repository) CheckBrandExists(id int) (bool, error) {
+	exists := false
+
+	err := repository.Db.Get(&exists,
+		`SELECT EXISTS(SELECT 1 FROM product_brands WHERE id = ? AND is_active = true)`,
+		id,
+	)
+
+	return exists, err
 }
 
 // Get brand by id
@@ -103,7 +114,7 @@ func (repository *Repository) UpdateBrand(c *gin.Context) {
 
 	// Check if the brand exists and is active before updating
 	err := repository.Db.Get(
-		&brand, 
+		&brand,
 		"SELECT id, name, slug, logo_url, is_active, created_at, updated_at FROM product_brands WHERE id= ? and is_active = true", id)
 
 	if err != nil {
@@ -155,19 +166,19 @@ func (repository *Repository) UpdateBrand(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Brand updated successfully",
-		"brand": brand,
+		"brand":   brand,
 	})
 }
 
 // Delete brand by id
 func (repository *Repository) DeleteBrand(c *gin.Context) {
-	
+
 	id := c.Param("id")
 
 	query := "DELETE FROM product_brands WHERE id = ? and is_active = true"
-	
+
 	_, err := repository.Db.Exec(query, id)
-	
+
 	if err != nil {
 		log.Error(err)
 		if err == sql.ErrNoRows {
