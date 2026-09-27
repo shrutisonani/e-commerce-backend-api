@@ -7,9 +7,9 @@ import (
 
 func VariantRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
 
-	// variant := rg.Group("/variant")
+	variant := rg.Group("/variant")
 
-	// variant.GET("", productRepo.GetProductVariants)
+	variant.GET("/:id", productRepo.GetVariantByID)
 }
 
 func AdminVariantRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
