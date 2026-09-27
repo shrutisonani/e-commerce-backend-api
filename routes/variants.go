@@ -9,6 +9,7 @@ func VariantRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
 
 	variant := rg.Group("/variant")
 
+	variant.GET("", productRepo.GetAllVariants)
 	variant.GET("/:id", productRepo.GetVariantByID)
 }
 

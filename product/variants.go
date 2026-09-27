@@ -144,6 +144,66 @@ func (repository *Repository) CheckVariantExists(variantID int) (bool, error) {
 	return exists, err
 }
 
+// Get all product variants, optionally filtered by product ID
+func (repository *Repository) GetAllVariants(c *gin.Context) {
+
+	productID := c.Query("product_id")
+
+	variants := []ProductVariant{}
+
+	var err error
+
+	if productID != "" {
+
+		id, parseErr := strconv.Atoi(productID)
+
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid product_id",
+			})
+			return
+		}
+
+		// check if the product exists and is active
+		err = repository.Db.Select(
+			&variants,
+			`SELECT pv.*
+			FROM product_variants pv
+			INNER JOIN products p
+				ON p.id = pv.product_id
+			WHERE pv.product_id = ?
+			AND p.is_active = true
+			ORDER BY pv.id ASC`,
+			id,
+		)
+
+	} else {
+		// fetch all variants for active products
+		err = repository.Db.Select(
+			&variants,
+			`SELECT pv.*
+			FROM product_variants pv
+			INNER JOIN products p
+				ON p.id = pv.product_id
+			WHERE p.is_active = true
+			ORDER BY pv.id ASC`,
+		)
+	}
+
+	if err != nil {
+		log.Error(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch variants",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": variants,
+	})
+}
+
 // Get a product variant by its ID
 func (repository *Repository) GetVariantByID(c *gin.Context) {
 
