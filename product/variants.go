@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -108,6 +109,7 @@ func (repository *Repository) CreateProductVariant(c *gin.Context) {
 
 	// variant := ProductVariant{}
 
+	// check if the variant exists
 	variantExixts, err := repository.CheckVariantExists(int(id))
 	if err != nil {
 		log.Error(err)
@@ -140,4 +142,52 @@ func (repository *Repository) CheckVariantExists(variantID int) (bool, error) {
 	)
 
 	return exists, err
+}
+
+// Get a product variant by its ID
+func (repository *Repository) GetVariantByID(c *gin.Context) {
+
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid variant ID",
+		})
+		return
+	}
+
+	variant := ProductVariant{}
+
+	// check if the variant exists and is active
+	err = repository.Db.Get(
+		&variant,
+		`SELECT pv.*
+		FROM product_variants pv
+		INNER JOIN products p
+			ON p.id = pv.product_id
+		WHERE pv.id = ?
+		AND p.is_active = true`,
+		id,
+	)
+
+	if err != nil {
+
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Variant not found",
+			})
+			return
+		}
+
+		log.Error(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch variant",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"variant": variant,
+	})
 }
