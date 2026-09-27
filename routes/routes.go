@@ -18,6 +18,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	categoryRepo := category.NewCategory(h.DB)
 	brandRepo := brand.NewBrand(h.DB)
 	productRepo := product.NewProduct(h.DB, categoryRepo, brandRepo)
+	variantRepo := product.NewProductVariant(h.DB)
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -43,6 +44,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	CategoryRoutes(userRoutes, categoryRepo) // category
 	BrandRoutes(userRoutes, brandRepo)       //brand
 	ProductRoutes(userRoutes, productRepo)   // product
+	VariantRoutes(userRoutes, variantRepo)   // product variants
 
 	// SUPER_ADMIN
 	adminRoutes := protected.Group("/v1")
@@ -52,5 +54,6 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	AdminCategoryRoutes(adminRoutes, categoryRepo) // category
 	AdminBrandRoutes(adminRoutes, brandRepo)       // brand
 	AdminProductRoutes(adminRoutes, productRepo)   // product
+	AdminVariantRoutes(adminRoutes, variantRepo)   // product variants
 
 }
