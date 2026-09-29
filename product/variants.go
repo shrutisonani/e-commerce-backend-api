@@ -394,3 +394,47 @@ func (repository *Repository) UpdateVariant(c *gin.Context) {
 		"variant": variant,
 	})
 }
+
+// Delete a product variant by its ID
+func (repository *Repository) DeleteVariant(c *gin.Context) {
+
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid variant ID",
+		})
+		return
+	}
+
+	// check if the variant exists
+	result, err := repository.Db.Exec(
+		`
+		DELETE FROM product_variants
+		WHERE id = ?
+		`,
+		id,
+	)
+
+	if err != nil {
+		log.Error(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to delete variant",
+		})
+		return
+	}
+
+	rows, _ := result.RowsAffected()
+
+	if rows == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Variant not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Product variant deleted successfully",
+	})
+}

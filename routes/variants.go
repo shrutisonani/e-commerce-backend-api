@@ -19,4 +19,5 @@ func AdminVariantRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
 
 	variant.POST("", productRepo.CreateProductVariant)
 	variant.PUT("/:id", productRepo.UpdateVariant)
+	variant.DELETE("/:id", productRepo.DeleteVariant)
 }
