@@ -18,4 +18,5 @@ func AdminVariantRoutes(rg *gin.RouterGroup, productRepo *product.Repository) {
 	variant := rg.Group("/variant")
 
 	variant.POST("", productRepo.CreateProductVariant)
+	variant.PUT("/:id", productRepo.UpdateVariant)
 }

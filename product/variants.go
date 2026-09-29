@@ -251,3 +251,146 @@ func (repository *Repository) GetVariantByID(c *gin.Context) {
 		"variant": variant,
 	})
 }
+
+// Update a product variant by its ID
+func (repository *Repository) UpdateVariant(c *gin.Context) {
+
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid variant ID",
+		})
+		return
+	}
+
+	variant := ProductVariant{}
+
+	// check if the variant exists
+	err = repository.Db.Get(
+		&variant,
+		`
+		SELECT *
+		FROM product_variants
+		WHERE id = ?
+		`,
+		id,
+	)
+
+	if err != nil {
+
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Variant not found",
+			})
+			return
+		}
+
+		log.Error(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch variant",
+		})
+		return
+	}
+
+	// bind the request body to the UpdateVariantRequest struct
+	input := UpdateVariantRequest{}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+		})
+		return
+	}
+
+	if input.ProductID != nil {
+		variant.ProductID = *input.ProductID
+	}
+
+	if input.Size != nil {
+		variant.Size = *input.Size
+	}
+
+	if input.Color != nil {
+		variant.Color = *input.Color
+	}
+
+	if input.ColorCode != nil {
+		variant.ColorCode = *input.ColorCode
+	}
+
+	if input.MRP != nil {
+		variant.MRP = *input.MRP
+	}
+
+	if input.SellingPrice != nil {
+		variant.SellingPrice = *input.SellingPrice
+	}
+
+	if input.StockQty != nil {
+		variant.StockQty = *input.StockQty
+	}
+
+	if variant.MRP <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "MRP must be greater than zero",
+		})
+		return
+	}
+
+	if variant.SellingPrice <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Selling price must be greater than zero",
+		})
+		return
+	}
+
+	if variant.SellingPrice > variant.MRP {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Selling price cannot be greater than MRP",
+		})
+		return
+	}
+
+	discount := ((variant.MRP - variant.SellingPrice) / variant.MRP) * 100
+
+	_, err = repository.Db.Exec(
+		`UPDATE product_variants
+		SET
+			product_id = ?,
+			size = ?,
+			color = ?,
+			color_code = ?,
+			mrp = ?,
+			selling_price = ?,
+			discount_pct = ?,
+			stock_qty = ?
+		WHERE id = ?`,
+		variant.ProductID,
+		variant.Size,
+		variant.Color,
+		variant.ColorCode,
+		variant.MRP,
+		variant.SellingPrice,
+		discount,
+		variant.StockQty,
+		id,
+	)
+
+	if err != nil {
+		log.Error(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update variant",
+		})
+		return
+	}
+
+	variant.DiscountPct = discount
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Product variant updated successfully",
+		"variant": variant,
+	})
+}
